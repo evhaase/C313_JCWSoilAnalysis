@@ -51,7 +51,7 @@ RSD_data
 
 3) Tidying the CPS Data
 ```{r Tidying CPS Data, warning=FALSE, message=FALSE}
-ICPS_tidy<-ICPMS_imported %>%
+ICPMS_tidy<-ICPMS_imported %>%
   #first the CPS columns are selected
   #and renamed with the appropriate metal isotope
   select(Cr52 = CPS,
@@ -71,5 +71,35 @@ ICPS_tidy<-ICPMS_imported %>%
                values_to = "CPS")
 
 #Previewing the CPS Data
-ICPS_tidy
+ICPMS_tidy
 ```
+
+4) Tidying the CPS Data and Correcting for ISTD
+```{r CPS ICPMS Tidying}
+#Tidying the CPS Data for ICPMS and combining back in the RSD Data
+ICPMS_tidy <- ICPMS_imported %>%
+  select(Cr = CPS,
+         Cr53 = CPS.1,
+         As75 = CPS.2,
+         Cd111 = CPS.3,
+         Cd114 = CPS.4,
+         Pb208 = CPS.5,
+         Ge72 = CPS.7,
+         Sample.Key)%>%
+  pivot_longer(1:6,
+               names_to = "metal",
+               values_to = "CPS")%>%
+  #mutating in the RSD Data
+  mutate(RSD = RSD_data$RSD/RSD_data$Ge_RSD,
+         CPS=CPS/Ge72)%>% #ISTD Correction
+  select(-Ge72)
+
+#Confirming that the RSD data properly matches the CPS data
+#Should output TRUE if the data is properly matching
+all(RSD_data$Sample.Key==ICPMS_tidy$Sample.Key, RSD_data$metal==ICPMS_tidy$metal)
+
+#Previewing the ICPMS Data
+ICPMS_tidy
+```
+
+
