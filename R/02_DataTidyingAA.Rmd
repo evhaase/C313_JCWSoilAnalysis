@@ -12,15 +12,15 @@ library(janitor)
 
 1) Importing the Data
 ```{r, warning=FALSE, message=TRUE}
-#Import AA data -> find path by right clicking on data file (already uploaded in R and selecting "import dataset")
+#Import AA data -> find path by right clicking on data file -> import dataset. Change the first column to "number", the second column to "double", and the third to "number". Change the skip to 4. Copy the path at the top, add it to the code in the bottom right zone. Copy the code and run it in this chunk.
 
-AA_imported <- read_csv("~/R/C313_JCWSoilAnalysis/Data/AA_Data.csv", col_types = cols(Analysis = col_number()), 
-    skip = 4)
+AA_Data <- read_csv("~/R/C313_JCWSoilAnalysis/Data/AA_Data.csv", col_types = cols(`%RSD` = col_number(), 
+    Analysis = col_number(), `Mean Abs.` = col_double(), 
+    `Sample Key` = col_number(), X2 = col_double(), 
+    X3 = col_number()), skip = 4)
 View(AA_Data)
 
-sample_key <- read.csv("~/R/C313_JCWSoilAnalysis/Data/Sample_Key.csv", skip=0)
-
 #Preview Data
-AA_imported
-sample_key
+AA_Data
 ```
+
