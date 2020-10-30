@@ -27,4 +27,12 @@ AA_Data
 sample_key
 ```
 
+2) Merging the Sample Key
+```{r merging sample key}
+#Merging together the AA Data and the Sample Key
+AA_merged <- merge(AA_Data, sample_key)
 
+#Previewing the merged data
+AA_merged
+
+```
