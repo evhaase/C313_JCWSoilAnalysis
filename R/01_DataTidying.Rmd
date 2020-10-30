@@ -11,9 +11,13 @@ library(readr)
 
 1) Importing the Data
 ```{r, warning=FALSE, message=TRUE}
-ICPMS_imported <- read.csv("~/R/C313_JCWSoilAnalysis/Data/ICPMS_Data.csv", skip=1, na="N/A")
+#Import ICPMS data -> find path by right clicking on data file (already uploaded in R and selecting "import dataset")
+ICPMS_imported <- read.csv("~/R/C313_JCWSoilAnalysis/Data/ICPMS_Data.csv", skip=1, na="N/A") 
 
+#Import ICPMS data -> find path by right clicking on data file (already uploaded in R and selecting "import dataset")
 sample_key <- read.csv("~/R/C313_JCWSoilAnalysis/Data/Sample_Key.csv", skip=0)
+
+#Preview Data
 ICPMS_imported
 sample_key
 ```
