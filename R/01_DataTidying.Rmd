@@ -22,3 +22,30 @@ ICPMS_imported
 sample_key
 ```
 
+#Data Tidying
+
+2) Tidying the RSD Data
+```{r Tidying RSD Data, warning=FALSE, message=FALSE}
+RSD_data<-ICPMS_imported %>%
+  #first the RSD columns are selected
+  #and renamed with the appropriate metal isotope
+  select(Cr52 = CPS.RSD,
+         Cr53 = CPS.RSD.1,
+         As75 = CPS.RSD.2,
+         Cd111 = CPS.RSD.3,
+         Cd114 = CPS.RSD.4,
+         Pb208 = CPS.RSD.5,
+         Ge_RSD = CPS.RSD.7,
+         Sample.Key)%>%
+  #The sample key is also selected for later use in verifying
+  #that the RSD data is properly matching the CPS data
+  #then the newly renamed RSD columns are gathered together
+  #a column is created to indicate which metal corresponds to which RSD
+  pivot_longer(1:6,
+               names_to = "metal",
+               values_to = "RSD")
+
+#Previewing the RSD Data
+RSD_data
+```
+
