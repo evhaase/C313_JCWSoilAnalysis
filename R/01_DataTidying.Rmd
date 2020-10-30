@@ -102,4 +102,12 @@ all(RSD_data$Sample.Key==ICPMS_tidy$Sample.Key, RSD_data$metal==ICPMS_tidy$metal
 ICPMS_tidy
 ```
 
+5) Merging the Sample Key
+```{r merging sample key}
+#Merging together the ICPMS Data and the Sample Key
+ICPMS_merged <- merge(ICPMS_tidy, sample_key)
+
+#Previewing the merged data
+ICPMS_merged
+```
 
