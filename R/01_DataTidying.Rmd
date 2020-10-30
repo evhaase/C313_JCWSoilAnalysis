@@ -111,3 +111,8 @@ ICPMS_merged <- merge(ICPMS_tidy, sample_key)
 ICPMS_merged
 ```
 
+6) Removing clutter from the environment
+```{r, warning=FALSE}
+#Set warning=FALSE so the chunk will not notify tou when an object is already removed from the environment
+rm(list=setdiff(ls(), "ICPMS_merged"))
+```
