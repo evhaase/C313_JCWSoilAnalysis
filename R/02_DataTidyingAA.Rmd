@@ -20,7 +20,11 @@ AA_Data <- read_csv("~/R/C313_JCWSoilAnalysis/Data/AA_Data.csv", col_types = col
     X3 = col_number()), skip = 4)
 View(AA_Data)
 
+sample_key <- read_csv("~/R/C313_JCWSoilAnalysis/Data/Sample_Key.csv")
+
 #Preview Data
 AA_Data
+sample_key
 ```
+
 
