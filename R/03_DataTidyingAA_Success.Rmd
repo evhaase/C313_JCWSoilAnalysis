@@ -1,0 +1,26 @@
+---
+title: "AA_test"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(readr)
+library(janitor)
+```
+
+1) Importing the Data
+```{r, warning=FALSE, message=TRUE}
+#Import AA data -> find path by right clicking on data file (already uploaded in R and selecting "import dataset")
+AA_Data <- read.csv("~/R/C313_JCWSoilAnalysis/Data/AA_Data.csv", skip=4, na="N/A") 
+
+#Import sample key data -> find path by right clicking on data file (already uploaded in R and selecting "import dataset")
+sample_key <- read.csv("~/R/C313_JCWSoilAnalysis/Data/Sample_Key.csv", skip=0)
+
+#Preview Data
+AA_Data
+sample_key
+```
+
+
