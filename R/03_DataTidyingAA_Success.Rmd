@@ -46,4 +46,3 @@ joined_data_tidy <- joined_data %>%
 #Preview data sets
 view(joined_data_tidy)
 ```
-
