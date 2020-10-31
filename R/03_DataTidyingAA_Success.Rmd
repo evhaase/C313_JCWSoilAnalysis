@@ -32,4 +32,18 @@ view(sample_key_tidy)
 view(AA_Data)
 ```
 
+```{r fully joining datasets}
+#new joined dataset formation
+joined_data <- full_join(AA_Data, sample_key_tidy) 
+
+```
+
+```{r drop N/A's in Mean Abs.}
+#Remove N/A's from Mean Abs. variable
+joined_data_tidy <- joined_data %>% 
+  drop_na(Mean.Abs.)
+
+#Preview data sets
+view(joined_data_tidy)
+```
 
