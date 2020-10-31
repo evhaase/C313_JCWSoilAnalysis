@@ -23,4 +23,13 @@ AA_Data
 sample_key
 ```
 
+```{r mutating the Sample Key}
+sample_key_tidy <- sample_key %>%
+  mutate(Sample.Key = as.character(Sample.Key))
+
+#Preview data sets
+view(sample_key_tidy)
+view(AA_Data)
+```
+
 
