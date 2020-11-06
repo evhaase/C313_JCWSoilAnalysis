@@ -22,3 +22,38 @@ metals_analyzed <- unique(ICPMS$metal)
 sample_sites
 metals_analyzed
 ```
+
+```{r Calibration}
+#For loop
+ICPMS_cal <- NULL
+for (unique_metal in metals_analyzed){
+  cal <- ICPMS %>%
+    filter(Type== "Cal1" | Type== "Cal2" | Type== "Cal3") %>%
+    filter(metal == unique_metal)%>%
+    select(Concentration,CPS,RSD)
+  
+#Perform a weighted linear regression, account for uncertainty in the CPS by weighting the regression with the RSD readings  
+  w <- 1/(cal$CPS*cal$RSD)^2
+  model <- lm(cal$CPS ~ cal$Concentration, weights = w)
+  
+#Pulling info from model to be stored in a tidy calibration data set  
+  slope <- model$coefficients[2]
+  intercept <- model$coefficients[1]
+  slope_std <- summary(model)$coefficients[2,2]
+  intercept_std <- summary(model)$coefficients[1,2]
+ 
+#Plot calibration curve   
+  plot(cal$CPS ~ cal$Concentration,
+       xlab= paste("Concentration of ", unique_metal, "(ppb)"), #units from the standard solution prepared at OHSU (µg/L)
+       ylab= "Counts per second")+
+       abline(model, col="red")+
+       title(paste("Calibration for", unique_metal))
+  equation <- tibble(metal= unique_metal, slope, slope_std, intercept, intercept_std)
+  ICPMS_cal <- rbind(ICPMS_cal, equation)
+}
+
+ICPMS_cal
+#Clearing the envrironment
+remove(equation, cal, slope, slope_std, intercept, intercept_std, w, model, unique_metal)
+```
+
