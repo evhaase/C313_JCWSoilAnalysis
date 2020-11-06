@@ -1,0 +1,40 @@
+---
+title: "Follow-along"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r lists}
+list <- c(1,3,4,2,5)
+new_list <- NULL
+
+for(i in list){
+  new_list <- c(new_list, i)
+  print(new_list)
+}
+```
+
+```{r write a function}
+#inputs: sample_number as a number and metal_analyzed as a character
+#outputs: Sample as a dataframe
+
+filter_sample <- function(sample_number, metal_analyzed){
+  Sample <- ICPMS %>%
+  filter(sample_key== sample_number)%>%
+  filter(metal== metal_analyzed)
+return(Sample)
+}
+```
+
+```{r if/else statements}
+value <- 1
+if(value==1){
+  print("value equal to one")
+} else if(value > 5){
+  print("large number")
+} else{
+  print(value)}
+```
