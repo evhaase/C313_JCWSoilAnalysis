@@ -117,3 +117,7 @@ ICPMS_merged
 #Set warning=FALSE so the chunk will not notify tou when an object is already removed from the environment
 rm(list=setdiff(ls(), "ICPMS_merged"))
 ```
+
+```{r creating a .csv}
+write.csv(ICPMS_merged, "~/R/C313_JCWSoilAnalysis/Data/ICPMS_Data_Tidy.csv")
+```
