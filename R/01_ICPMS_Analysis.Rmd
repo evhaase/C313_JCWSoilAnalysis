@@ -4,6 +4,21 @@ output: html_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(readr)
 ```
 
+```{r ICPMS Data}
+ICPMS <- read_csv("~/R/C313_JCWSoilAnalysis/Data/ICPMS_Data_Tidy.csv")
+View(ICPMS)
+```
+
+```{r Defining lists}
+sample_sites <- unique(filter(ICPMS, Site!="MB", Site!="")$Site)
+#excluding method blank and quality control from the list of sites
+metals_analyzed <- unique(ICPMS$metal)
+
+#Preview the lists to check for potential issues
+sample_sites
+metals_analyzed
+```
