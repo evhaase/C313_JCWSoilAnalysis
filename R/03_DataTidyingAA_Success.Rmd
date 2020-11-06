@@ -46,3 +46,8 @@ joined_data_tidy <- joined_data %>%
 #Preview data sets
 view(joined_data_tidy)
 ```
+
+```{r create a .csv}
+write.csv(joined_data_tidy, "~/R/C313_JCWSoilAnalysis/Data/AA_Data_Tidy.csv")
+```
+
