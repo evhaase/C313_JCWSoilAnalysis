@@ -64,17 +64,17 @@ remove(equation, cal, slope, slope_std, intercept, intercept_std, w, model, uniq
 sample_analysis <- function(unique_Site){
   concentration_data <- NULL
   for (unique_metal in metals_analyzed){
-    sample <- filter(ICPMS, metal == unique_metal, site == unique_site)
+    sample <- filter(ICPMS, metal == unique_metal, Site == unique_Site)
     data <- NULL
     
-    for(ID in sample$sample_key){
-      sample_data <- filter(sample, sample_key == ID)
+    for(ID in sample$Sample.Key){
+      sample_data <- filter(sample, Sample.Key == ID)
       cal <- filter(ICPMS_cal, metal == unique_metal)
       
       #sample analysis
       m <- cal$slope
       b <- cal$intercept
-      y <- sample_data$cps
+      y <- sample_data$CPS
       
       b_e <- cal$intercept_std
       m_e <- cal$slope_std
@@ -91,17 +91,17 @@ sample_analysis <- function(unique_Site){
       e_x <- x*sqrt((e_yb/yb)^2 + (m_e/m)^2)
       #error in x from the calibration
       
-      data <- rbind(data, data_frame(sample_key = ID, x, e_x))
-      if(unique_site != "MB"){
-        concentration_data <- data_frame(sample_key = sample_data$sample_key,
-                                         analyst = sample_data$analyst,
+      data <- rbind(data, data_frame(Sample.Key = ID, x, e_x))
+      if(unique_Site!= "MB"){
+        concentration_data <- data_frame(Sample.Key = sample_data$Sample.Key,
+                                         Analyst = sample_data$Analyst,
                                          metal = unique_metal,
-                                         Site = unique_site,
+                                         Site = unique_Site,
                                          conc_dil = x,
                                          conc_dil_error = e_x)%>%
           rbind(concentration_data)
       }
-      if (unique_site=="MB"){
+      if (unique_Site=="MB"){
         x <- mean(data$x)
         e_x <- sd(data$x)
         concentration_data <- data_frame(metal = unique_metal,
@@ -114,5 +114,26 @@ sample_analysis <- function(unique_Site){
     return(concentration_data)
   }
 }
+```
+
+```{r Creating a function for different soil sample sites}
+#inputs: a function
+#outputs: a data frame withe the function outputs from each site
+run_sites <- function(Function){
+  value <- NULL
+  for(sites in sample_sites){
+    site_value <- Function(sites)
+    value <- rbind(site_value, value)
+  }
+  return(value)
+}
+```
+
+```{r Analyze method blanks}
+MB <- sample_analysis("MB") #(µg/kg)
+uncor_sample <- run_sites(sample_analysis) #values do not account for dilutions (µg/kg)
+
+MB
+uncor_sample
 ```
 
