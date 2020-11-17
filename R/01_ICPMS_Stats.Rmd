@@ -1,0 +1,20 @@
+---
+title: "01_ICPMS_Stats"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(outliers)
+library(SDMTools)
+library(stats)
+library(lattice)
+library(gplots)
+library(tidyverse)
+library(readr)
+```
+
+```{r ICPMS Data}
+ICPMS <- read_csv("~/R/C313_JCWSoilAnalysis/Data/ICPMS_Data_Tidy.csv")
+View(ICPMS)
+```
