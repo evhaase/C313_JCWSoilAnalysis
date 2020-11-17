@@ -18,3 +18,226 @@ library(readr)
 ICPMS <- read_csv("~/R/C313_JCWSoilAnalysis/Data/ICPMS_Data_Tidy.csv")
 View(ICPMS)
 ```
+
+```{r Defining lists}
+sample_sites_I <- unique(filter(ICPMS, Site!="MB", Site!="")$Site)
+#excluding method blank and quality control from the list of sites
+metals_analyzed_I <- unique(ICPMS$metal)
+
+#Preview the lists to check for potential issues
+sample_sites_I
+metals_analyzed_I
+```
+
+```{r Calibration}
+#For loop
+ICPMS_cal <- NULL
+for (unique_metal_I in metals_analyzed_I){
+  cal_I <- ICPMS %>%
+    filter(Type== "Cal1" | Type== "Cal2" | Type== "Cal3") %>%
+    filter(metal == unique_metal_I)%>%
+    select(Concentration,CPS,RSD)
+  
+#Perform a weighted linear regression, account for uncertainty in the CPS by weighting the regression with the RSD readings  
+  w <- 1/(cal_I$CPS*cal_I$RSD)^2
+  model_I <- lm(cal_I$CPS ~ cal_I$Concentration, weights = w)
+  
+#Pulling info from model to be stored in a tidy calibration data set  
+  slope_I <- model_I$coefficients[2]
+  intercept_I <- model_I$coefficients[1]
+  slope_std_I <- summary(model_I)$coefficients[2,2]
+  intercept_std_I <- summary(model_I)$coefficients[1,2]
+ 
+#Plot calibration curve   
+  plot(cal_I$CPS ~ cal_I$Concentration,
+       xlab= paste("Concentration of ", unique_metal_I, "(ppb)"), #units from the standard solution prepared at OHSU (µg/L)
+       ylab= "Counts per second")+
+       abline(model_I, col="red")+
+       title(paste("Calibration for", unique_metal_I))
+  equation_I <- tibble(metal= unique_metal_I, slope_I, slope_std_I, intercept_I, intercept_std_I)
+  ICPMS_cal <- rbind(ICPMS_cal, equation_I)
+}
+
+ICPMS_cal
+#Clearing the envrironment
+remove(equation_I, cal_I, slope_I, slope_std_I, intercept_I, intercept_std_I, w, model_I, unique_metal_I)
+```
+
+```{r Creating a function for sample analysis}
+#inputs: unique_site (as a character, ex. "A")
+#outputs: concentration vector
+
+sample_analysis_I <- function(unique_Site){
+  concentration_data <- NULL
+  for (unique_cr in metals_analyzed_I){
+    sample <- filter(ICPMS, metal == unique_cr, Site == unique_Site)
+    data <- NULL
+    
+    for(ID in sample$Sample.Key){
+      sample_data_I <- filter(sample, Sample.Key == ID)
+      cal_I <- filter(ICPMS_cal, metal == unique_cr)
+      
+      #sample analysis
+      m <- cal_I$slope_I
+      b <- cal_I$intercept_I
+      y <- sample_data_I$CPS
+      
+      b_e <- cal_I$intercept_std_I
+      m_e <- cal_I$slope_std_I
+      
+      x <- (y-b)/m #The units are dependent on the calibration standards (Kg/mL)
+      
+      rsd <- ((sample_data_I$RSD/100)*sample_data_I$CPS)
+      cps <- sample_data_I$CPS
+      
+      #error propagation
+      e_yb <- sqrt((rsd)^2 + (b_e)^2) 
+      #error in the y-b from the calibration
+      yb <- cps-b
+      e_x <- x*sqrt((e_yb/yb)^2 + (m_e/m)^2)
+      #error in x from the calibration
+      
+      data <- rbind(data, data_frame(Sample.Key = ID, x, e_x))
+      if(unique_Site!= "MB"){
+        concentration_data <- data_frame(Sample.Key = sample_data_I$Sample.Key,
+                                         Analyst = sample_data_I$Analyst,
+                                         metal = unique_cr,
+                                         Site = unique_Site,
+                                         conc_dil = x,
+                                         conc_dil_error = e_x)%>%
+          rbind(concentration_data)
+      }
+      if (unique_Site=="MB"){
+        x <- mean(data$x)
+        e_x <- sd(data$x)
+        concentration_data <- data_frame(metal = unique_cr,
+                                         Site = unique_Site,
+                                         conc_dil = x,
+                                         conc_dil_error = e_x) %>%
+          rbind(concentration_data)
+      }
+    }
+  }
+  return(concentration_data)
+ }
+```
+
+```{r Creating a function for different soil sample sites}
+#inputs: a function
+#outputs: a data frame withe the function outputs from each site
+run_sites <- function(Function){
+  value <- NULL
+  for(sites in sample_sites_I){
+    site_value <- Function(sites)
+    value <- rbind(site_value, value)
+  }
+  return(value)
+}
+```
+
+```{r Analyze method blanks}
+MB_I <- sample_analysis_I("MB") #(µg/kg)
+uncor_sample_I <- run_sites(sample_analysis_I) #values do not account for dilutions (µg/kg)
+
+MB_I
+uncor_sample_I
+```
+
+```{r Corrections and error propagation}
+sample_data_mb_I <- NULL
+
+for (unique_metal_I in metals_analyzed_I){
+  MB_metal_I <- filter(MB_I, metal==unique_metal_I)
+  sample_metal_I <- filter(uncor_sample_I, metal==unique_metal_I)
+  conc_dil_blanked_I <- sample_metal_I$conc_dil - mean(MB_metal_I$conc_dil)
+  
+  #Error propagation: subtraction of MB
+  conc_dil_blanked_error_I <- sqrt((sample_metal_I$conc_dil_error)^2 + (sd(MB_metal_I$conc_dil)^2))
+  
+  sample_data_mb_I <- sample_metal_I %>%
+    mutate(conc_dil_blanked_I, conc_dil_blanked_error_I) %>%
+    rbind(sample_data_mb_I)
+}
+
+sample_data_mb_I
+```
+
+#Sample Prep Procedures
+
+1) mass_soil (ex. 1.50621) weighed on an analytical balance (uncertainty = ±0.001)
+2) mass_soil was dried in 55 C oven for 1 week
+3) mass_soil was ground with a mortar and pestle
+4) mass_soil was quantitatively transferred to acid washed teflon beaker
+5) mass_soil was digested with ~10 mL MQ water, 3 mL nitric acid, 2 mL hydrochloric acid and heated until steaming for 30 minutes
+6) Acid digestion solution was quantitatively transferred to falcon tube and diluted to total_volume which was measured to fill line (ex, 45 mL)
+7) Falcon tube centrifuged for 10 minutes at 1500 rpm for 10 minutes
+8) 10 mL of sample transferred to metals-free 15 mL tube and brought to OHSU for ICPMS analysis. (stored in fridge prior to transport)
+9) 10 µL (uncertainty= ± 1µL) of solution was micor-pipetted into 1000 µL (uncertainty) of MQ water by Lab Assistant at OHSU.
+
+```{r Dilution factors and measurement errors}
+#error propagation
+vol_e <- 1
+mass_e <- 0.001
+dil_1010_e <- sqrt(1^2 + 10^2)
+dil_e <- sqrt((dil_1010_e/1010)^2 + (1/10)^2) #error in 101 dilution factor
+
+sample_data_I <- merge(ICPMS, sample_data_mb_I) %>% #This adds in important details such as soil mass
+  unique()%>%
+  mutate(conc_blanked= conc_dil_blanked_I*(Total.Volume/1000)/(Mass.of.Soil/1000)*101,
+                                                             conc_blanked_error_I = conc_blanked*
+      sqrt((conc_dil_blanked_error_I/conc_dil_blanked_I)^2+
+             (dil_e/101)^2 +
+             (mass_e/Mass.of.Soil)^2 +
+             (vol_e/Total.Volume)^2),
+      conc_unblanked = conc_dil*(Total.Volume/1000)/(Mass.of.Soil/1000)*101,
+      conc_unblanked_error = conc_unblanked*
+        sqrt((conc_dil_error/conc_dil)^2 +
+               (dil_e/101)^2 +
+               (mass_e/Mass.of.Soil)^2 +
+               (vol_e/Total.Volume)^2)) %>%
+select(-Concentration, #removing unnecessary columns
+       -Type,
+       -Mass.of.Soil,
+       -Total.Volume,
+       -CPS,
+       -RSD,
+       -X1,
+       -conc_dil_blanked_I,
+       -conc_dil_blanked_error_I,
+       -conc_dil,
+       -conc_dil_error)
+
+sample_data_I
+```
+
+```{r, warning= FALSE, Clean the Environment}
+rm(list = ls()[!(ls() %in% c("ICPMS", "sample_data_I"))])
+```
+
+```{r Averaging}
+
+#adapted from Kieran's code
+
+ICPMS_Stats <- sample_data_I %>%
+  group_by(metal) %>%
+  summarize(mean_conc = mean(conc_blanked),
+            sd_conc = sd(conc_blanked),
+            n = n()) %>%
+  mutate(se = qnorm(0.975)*sd_conc/sqrt(n),
+         Lower_CI = mean_conc - se,
+         Upper_CI = mean_conc + se)
+
+ICPMS_Stats
+```
+
+```{r Known Concentrations}
+QC_mb <- sample_data_I %>%
+  group_by(Site) %>%
+  summarize(mean_conc = mean(conc_blanked),
+            sd_conc = sd(conc_blanked),
+            n = n())%>%
+   mutate(se = qnorm(0.975)*sd_conc/sqrt(n),
+         Lower_CI = mean_conc - se,
+         Upper_CI = mean_conc + se)
+QC_mb
+```
