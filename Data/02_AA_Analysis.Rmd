@@ -161,35 +161,35 @@ sample_data_mb
 #error propagation
 vol_e <- 1
 mass_e <- 0.001
-dil_1010_e <- sqrt(1^2 + 10^2)
-dil_e <- sqrt((dil_1010_e/1010)^2 + (1/10)^2) #error in 101 dilution factor
 
 sample_data <- merge(AA, sample_data_mb) %>% #This adds in important details such as soil mass
   unique()%>%
-  mutate(conc_blanked= conc_dil_blanked*(Total.Volume/1000)/(Mass.of.Soil/1000)*101,
+  mutate(conc_blanked= conc_dil_blanked*(Total.Volume/1000)/(Mass.of.Soil/1000),
                                                              conc_blanked_error = conc_blanked*
       sqrt((conc_dil_blanked_error/conc_dil_blanked)^2+
-             (dil_e/101)^2 +
              (mass_e/Mass.of.Soil)^2 +
              (vol_e/Total.Volume)^2),
-      conc_unblanked = conc_dil*(Total.Volume/1000)/(Mass.of.Soil/1000)*101,
+      conc_unblanked = conc_dil*(Total.Volume/1000)/(Mass.of.Soil/1000),
       conc_unblanked_error = conc_unblanked*
         sqrt((conc_dil_error/conc_dil)^2 +
-               (dil_e/101)^2 +
                (mass_e/Mass.of.Soil)^2 +
                (vol_e/Total.Volume)^2)) %>%
 select(-Concentration, #removing unnecessary columns
        -Type,
        -Mass.of.Soil,
        -Total.Volume,
-       -CPS,
+       -Mean.Abs.,
        -RSD,
+       -X.RSD,
+       -X1,
        -conc_dil_blanked,
        -conc_dil_blanked_error,
        -conc_dil,
        -conc_dil_error)
+
+sample_data
 ```
 
 ```{r, warning= FALSE, Clean the Environment}
-rm(list = ls()[!(ls() %in% c("AA", "sample_data"))])
+rm(list = ls()[!(ls() %in% c("AA", "sample_data", "ICPMS", "sample_data_I"))])
 ```
