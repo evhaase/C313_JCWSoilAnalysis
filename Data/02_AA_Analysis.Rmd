@@ -190,7 +190,7 @@ select(-Concentration, #removing unnecessary columns
 sample_data
 ```
 
-```{r, warning= FALSE, Clean the Environment}
+```{r, warning= FALSE}
 rm(list = ls()[!(ls() %in% c("AA", "sample_data", "ICPMS", "sample_data_I"))])
 ```
 
