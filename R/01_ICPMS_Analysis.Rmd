@@ -207,3 +207,31 @@ sample_data_I
 ```{r, warning= FALSE, Clean the Environment}
 rm(list = ls()[!(ls() %in% c("ICPMS", "sample_data_I"))])
 ```
+
+```{r Averaging}
+
+#adapted from Kieran's code
+
+ICPMS_Stats <- sample_data_I %>%
+  group_by(metal) %>%
+  summarize(mean_conc = mean(conc_blanked),
+            sd_conc = sd(conc_blanked),
+            n = n()) %>%
+  mutate(se = qnorm(0.975)*sd_conc/sqrt(n),
+         Lower_CI = mean_conc - se,
+         Upper_CI = mean_conc + se)
+
+ICPMS_Stats
+```
+
+```{r Known Concentrations}
+QC_mb <- sample_data_I %>%
+  group_by(Site) %>%
+  summarize(mean_conc = mean(conc_blanked),
+            sd_conc = sd(conc_blanked),
+            n = n())%>%
+   mutate(se = qnorm(0.975)*sd_conc/sqrt(n),
+         Lower_CI = mean_conc - se,
+         Upper_CI = mean_conc + se)
+QC_mb
+```
