@@ -48,7 +48,7 @@ for (unique_metal in metals_analyzed){
        xlab= paste("Concentration of ", unique_metal, "(ppm)"), #units from the standard solution prepared at OHSU (µg/L)
        ylab= "Absorbance")+
        abline(model, col="red")+
-       title(paste("Calibration for", unique_metal))
+       title(paste("AA Calibration for", unique_metal))
   equation <- tibble(metal= unique_metal, slope, slope_std, intercept, intercept_std)
   AA_cal <- rbind(AA_cal, equation)
 }

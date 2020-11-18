@@ -47,7 +47,7 @@ for (unique_metal_I in metals_analyzed_I){
        xlab= paste("Concentration of ", unique_metal_I, "(ppb)"), #units from the standard solution prepared at OHSU (µg/L)
        ylab= "Counts per second")+
        abline(model_I, col="red")+
-       title(paste("Calibration for", unique_metal_I))
+       title(paste("ICPMS Calibration for", unique_metal_I))
   equation_I <- tibble(metal= unique_metal_I, slope_I, slope_std_I, intercept_I, intercept_std_I)
   ICPMS_cal <- rbind(ICPMS_cal, equation_I)
 }
