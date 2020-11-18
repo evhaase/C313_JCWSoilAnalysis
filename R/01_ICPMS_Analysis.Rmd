@@ -225,7 +225,7 @@ ICPMS_Stats
 ```
 
 ```{r Known Concentrations}
-QC_mb <- sample_data_I %>%
+QC_mb_I <- sample_data_I %>%
   group_by(Site) %>%
   summarize(mean_conc = mean(conc_blanked),
             sd_conc = sd(conc_blanked),
@@ -233,5 +233,5 @@ QC_mb <- sample_data_I %>%
    mutate(se = qnorm(0.975)*sd_conc/sqrt(n),
          Lower_CI = mean_conc - se,
          Upper_CI = mean_conc + se)
-QC_mb
+QC_mb_I
 ```
